@@ -10,6 +10,7 @@ struct Matrix3x3 {
 };
 
 struct Segment;
+struct Sphere;
 
 #pragma region Oprator OverLoad
 
@@ -262,6 +263,21 @@ namespace Mymath {
 
 // End Vector
 #pragma endregion
+
+#pragma region Sphere
+
+	/// <summary>
+	/// 球と球の衝突判定
+	/// </summary>
+	/// <param name="s1">球 1</param>
+	/// <param name="s2">球 2</param>
+	/// <returns>true:衝突している,false:衝突していない</returns>
+	bool IsCollision(const Sphere& s1, const Sphere& s2);
+
+#pragma endregion
+
+
+
 
 #pragma region Matrix
 
