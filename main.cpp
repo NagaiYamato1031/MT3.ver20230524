@@ -168,6 +168,12 @@ void DrawPlane(const Plane& plane, const Matrix4x4& viewProjectionMatrix, const 
 	Novice::DrawLine((int)points[1].x, (int)points[1].y, (int)points[3].x, (int)points[3].y, color);
 }
 
+void DrawSegment(const Segment& segment, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, int32_t color) {
+	Vector3 start = Mymath::Transform(Mymath::Transform(segment.origin, viewProjectionMatrix), viewportMatrix);
+	Vector3 end = Mymath::Transform(Mymath::Transform(segment.origin + segment.diff, viewProjectionMatrix), viewportMatrix);
+	Novice::DrawLine((int)start.x, (int)start.y, (int)end.x, (int)end.y, color);
+}
+
 
 
 // Windowsアプリでのエントリーポイント(main関数)
@@ -197,15 +203,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	float cameraSence = 0.003f;
 
-	// 球
-	Sphere sphere;
-	sphere.center = { 0.0f,0.0f,0.0f };
-	sphere.radius = 0.5f;
 	// 平面
 	Plane plane;
-	plane.normal = { 0.3f,0.2f,0.0f };
+	plane.normal = { 0.3f,1.0f,0.0f };
 	plane.normal = Mymath::Normalize(plane.normal);
 	plane.distance = 1.2f;
+	// 線分
+	Segment segment;
+	segment.origin = { 0.0f,0.0f,0.0f };
+	segment.diff = { 0.2f,0.7f,0.2f };
 
 
 	int color = WHITE;
@@ -241,12 +247,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			ImGui::DragFloat3("CameraRotate", &cameraRotate.x, 0.01f);
 			ImGui::TreePop();
 		}
-		ImGui::DragFloat3("sphere1.center", &sphere.center.x, 0.01f);
-		ImGui::DragFloat("sphere1.radius", &sphere.radius, 0.01f);
 		ImGui::DragFloat3("plane.normal", &plane.normal.x, 0.01f);
 		plane.normal = Mymath::Normalize(plane.normal);
 		ImGui::DragFloat("plane.distance", &plane.distance, 0.01f);
-
+		ImGui::DragFloat3("segment.origin", &segment.origin.x, 0.01f);
+		ImGui::DragFloat3("segment.diff", &segment.diff.x, 0.01f);
 		ImGui::End();
 
 #pragma endregion
@@ -254,7 +259,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 #pragma region 実際の処理
 
-		if (Mymath::IsCollision(sphere, plane))
+		if (Mymath::IsCollision(plane,segment))
 			color = RED;
 		else
 			color = WHITE;
@@ -337,8 +342,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		DrawGrid(viewProjectionMatrix, viewportMatrix);
 
-		DrawSphere(sphere, viewProjectionMatrix, viewportMatrix, color);
 		DrawPlane(plane, viewProjectionMatrix, viewportMatrix, WHITE);
+		DrawSegment(segment, viewProjectionMatrix, viewportMatrix, color);
+
 
 		///
 		/// ↑描画処理ここまで

@@ -345,6 +345,47 @@ bool Mymath::IsCollision(const Sphere& sphere, const Plane& plane) {
 	return false;
 }
 
+bool Mymath::IsCollision(const Plane& plane, const Line& line) {
+	// 垂直判定を行うために、法線と線の内積を求める
+	float dot = Dot(plane.normal, line.diff);
+	// 垂直 = 平行であるので、衝突しない
+	if (dot == 0.0f) {
+		return false;
+	}
+	return true;
+}
+
+bool Mymath::IsCollision(const Plane& plane, const Ray& ray) {
+	// 垂直判定を行うために、法線と線の内積を求める
+	float dot = Dot(plane.normal, ray.diff);
+	// 垂直 = 平行であるので、衝突しない
+	if (dot == 0.0f) {
+		return false;
+	}
+	// t を求める
+	float t = (plane.distance - Dot(ray.origin, plane.normal)) / dot;
+	if (t < 0.0f) {
+		return false;
+	}
+	return true;
+}
+
+bool Mymath::IsCollision(const Plane& plane, const Segment& segment) {
+	// 垂直判定を行うために、法線と線の内積を求める
+	float dot = Dot(plane.normal, segment.diff);
+	// 垂直 = 平行であるので、衝突しない
+	if (dot == 0.0f) {
+		return false;
+	}
+	// t を求める
+	float t = (plane.distance - Dot(segment.origin, plane.normal)) / dot;
+	if (t < 0.0f || 1.0f < t) {
+		return false;
+	}
+	return true;
+}
+
+
 #pragma endregion
 
 

@@ -284,13 +284,33 @@ namespace Mymath {
 	/// <returns>true:衝突している,false:衝突していない</returns>
 	bool IsCollision(const Sphere& s1, const Sphere& s2);
 	/// <summary>
-	/// 球と球の衝突判定
+	/// 球と平面の衝突判定
 	/// </summary>
-	/// <param name="sphere">球 1</param>
-	/// <param name="plane">球 2</param>
+	/// <param name="sphere">球</param>
+	/// <param name="plane">平面</param>
 	/// <returns>true:衝突している,false:衝突していない</returns>
 	bool IsCollision(const Sphere& sphere, const Plane& plane);
-
+	/// <summary>
+	/// 線と平面の衝突判定
+	/// </summary>
+	/// <param name="plane">平面</param>
+	/// <param name="line">直線</param>
+	/// <returns></returns>
+	bool IsCollision(const Plane& plane, const Line& line);
+	/// <summary>
+	/// 線と平面の衝突判定
+	/// </summary>
+	/// <param name="plane">平面</param>
+	/// <param name="line">半直線</param>
+	/// <returns></returns>
+	bool IsCollision(const Plane& plane, const Ray& ray);
+	/// <summary>
+	/// 線と平面の衝突判定
+	/// </summary>
+	/// <param name="plane">平面</param>
+	/// <param name="line">線分</param>
+	/// <returns></returns>
+	bool IsCollision(const Plane& plane, const Segment& segment);
 
 #pragma endregion
 
