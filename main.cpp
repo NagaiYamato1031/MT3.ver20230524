@@ -148,6 +148,27 @@ void DrawSphere(const Sphere& sphere, const Matrix4x4& viewProjectionMatrix, con
 	}
 }
 
+void DrawPlane(const Plane& plane, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, uint32_t color) {
+	Vector3 center = plane.distance * plane.normal;
+	Vector3 perpendiculars[4];
+	perpendiculars[0] = Mymath::Normalize(Mymath::Perpendicular(plane.normal));
+	perpendiculars[1] = { -perpendiculars[0].x,-perpendiculars[0].y,-perpendiculars[0].z };
+	perpendiculars[2] = Mymath::Cross(plane.normal,perpendiculars[0]);
+	perpendiculars[3] = { -perpendiculars[2].x,-perpendiculars[2].y,-perpendiculars[2].z };
+
+	Vector3 points[4];
+	for (int32_t index = 0; index < 4; ++index) {
+		Vector3 extend = 2.0f * perpendiculars[index];
+		Vector3 point = center + extend;
+		points[index] = Mymath::Transform(Mymath::Transform(point, viewProjectionMatrix), viewportMatrix);
+	}
+	Novice::DrawLine((int)points[0].x, (int)points[0].y, (int)points[2].x, (int)points[2].y, color);
+	Novice::DrawLine((int)points[0].x, (int)points[0].y, (int)points[3].x, (int)points[3].y, color);
+	Novice::DrawLine((int)points[1].x, (int)points[1].y, (int)points[2].x, (int)points[2].y, color);
+	Novice::DrawLine((int)points[1].x, (int)points[1].y, (int)points[3].x, (int)points[3].y, color);
+}
+
+
 
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
@@ -177,12 +198,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	float cameraSence = 0.003f;
 
 	// 球
-	Sphere sphere1;
-	sphere1.center = { 0.0f,0.0f,0.0f };
-	sphere1.radius = 0.5f;
-	Sphere sphere2;
-	sphere2.center = { 0.5f,0.3f,0.7f };
-	sphere2.radius = 0.3f;
+	Sphere sphere;
+	sphere.center = { 0.0f,0.0f,0.0f };
+	sphere.radius = 0.5f;
+	// 平面
+	Plane plane;
+	plane.normal = { 0.3f,0.2f,0.0f };
+	plane.normal = Mymath::Normalize(plane.normal);
+	plane.distance = 1.2f;
+
 
 	int color = WHITE;
 
@@ -217,10 +241,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			ImGui::DragFloat3("CameraRotate", &cameraRotate.x, 0.01f);
 			ImGui::TreePop();
 		}
-		ImGui::DragFloat3("sphere1.center", &sphere1.center.x, 0.01f);
-		ImGui::DragFloat("sphere1.radius", &sphere1.radius, 0.01f);
-		ImGui::DragFloat3("sphere2.center", &sphere2.center.x, 0.01f);
-		ImGui::DragFloat("sphere2.radius", &sphere2.radius, 0.01f);
+		ImGui::DragFloat3("sphere1.center", &sphere.center.x, 0.01f);
+		ImGui::DragFloat("sphere1.radius", &sphere.radius, 0.01f);
+		ImGui::DragFloat3("plane.normal", &plane.normal.x, 0.01f);
+		plane.normal = Mymath::Normalize(plane.normal);
+		ImGui::DragFloat("plane.distance", &plane.distance, 0.01f);
+
 		ImGui::End();
 
 #pragma endregion
@@ -228,7 +254,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 #pragma region 実際の処理
 
-		if (Mymath::IsCollision(sphere1, sphere2))
+		if (Mymath::IsCollision(sphere, plane))
 			color = RED;
 		else
 			color = WHITE;
@@ -311,9 +337,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		DrawGrid(viewProjectionMatrix, viewportMatrix);
 
-		DrawSphere(sphere1, viewProjectionMatrix, viewportMatrix, color);
-		DrawSphere(sphere2, viewProjectionMatrix, viewportMatrix, WHITE);
-
+		DrawSphere(sphere, viewProjectionMatrix, viewportMatrix, color);
+		DrawPlane(plane, viewProjectionMatrix, viewportMatrix, WHITE);
 
 		///
 		/// ↑描画処理ここまで

@@ -9,8 +9,11 @@ struct Matrix3x3 {
 	float m[3][3];
 };
 
-struct Segment;
 struct Sphere;
+struct Line;
+struct Ray;
+struct Segment;
+struct Plane;
 
 #pragma region Oprator OverLoad
 
@@ -199,6 +202,13 @@ namespace Mymath {
 	/// <returns>始点に最も近い線分 t の座標</returns>
 	Vector3 CrossPoint(const Vector3& point, const Segment& segment);
 
+	/// <summary>
+	/// 垂直を求める
+	/// </summary>
+	/// <param name="vector">ベクトル</param>
+	/// <returns>垂直なベクトル</returns>
+	Vector3 Perpendicular(const Vector3& vector);
+
 	// End Vector3
 #pragma endregion
 
@@ -273,11 +283,16 @@ namespace Mymath {
 	/// <param name="s2">球 2</param>
 	/// <returns>true:衝突している,false:衝突していない</returns>
 	bool IsCollision(const Sphere& s1, const Sphere& s2);
+	/// <summary>
+	/// 球と球の衝突判定
+	/// </summary>
+	/// <param name="sphere">球 1</param>
+	/// <param name="plane">球 2</param>
+	/// <returns>true:衝突している,false:衝突していない</returns>
+	bool IsCollision(const Sphere& sphere, const Plane& plane);
+
 
 #pragma endregion
-
-
-
 
 #pragma region Matrix
 
