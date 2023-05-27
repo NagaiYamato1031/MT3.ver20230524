@@ -161,21 +161,30 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	// カメラ
 
-	Vector3 cameraPosition{ 0.0f,1.9f,-6.49f };
-	Vector3 cameraRotate{ 0.26f,0.0f,0.0f };
+	Vector3 kCameraStartPosition{ 0.0f,1.9f,-6.49f };
+	Vector3 kCameraStartRotate{ 0.26f,0.0f,0.0f };
 
-	// 線
-	Segment segment{ {-2.0f,-1.0f,0.0f},{3.0f,2.0f,2.0f} };
-	Vector3 point{ -1.5f,0.6f,0.6f };
+	Vector3 cameraPosition = kCameraStartPosition;
+	Vector3 cameraRotate = kCameraStartRotate;
 
-	Vector3 project = Mymath::Project(point - segment.origin, segment.diff);
-	Vector3 clossPoint = Mymath::CrossPoint(point, segment);
+	// Y 軸への移動を反映させるか
+	bool isEnableYMovement = false;
 
 	// マウス座標
 	Vector2 mousePosition{ 0 };
 	Vector2 preMousePosition{ 0 };
 
 	float cameraSence = 0.003f;
+
+	// 球
+	Sphere sphere1;
+	sphere1.center = { 0.0f,0.0f,0.0f };
+	sphere1.radius = 0.5f;
+	Sphere sphere2;
+	sphere2.center = { 0.5f,0.3f,0.7f };
+	sphere2.radius = 0.3f;
+
+	int color = WHITE;
 
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0) {
@@ -194,6 +203,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		Matrix4x4 cameraMatrix = Mymath::MakeAffineMatrix({ 1.0f,1.0f,1.0f }, cameraRotate, cameraPosition);
 
+#pragma region カメラ操作
+
 		const float kCameraSpeed = 0.05f;
 		if (Novice::CheckHitKey(DIK_SPACE)) {
 			cameraPosition.y += kCameraSpeed / 2.0f;
@@ -203,11 +214,19 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		}
 		if (Novice::CheckHitKey(DIK_W)) {
 			Vector3 vertical{ cameraRotate.z,0.0f,cameraRotate.x };
-			cameraPosition = cameraPosition + (Mymath::TransformNormal(vertical, cameraMatrix) * kCameraSpeed);
+			Vector3 velocity = Mymath::TransformNormal(vertical, cameraMatrix) * kCameraSpeed;
+			if (!isEnableYMovement) {
+				velocity.y = 0.0f;
+			}
+			cameraPosition = cameraPosition + velocity;
 		}
 		if (Novice::CheckHitKey(DIK_S)) {
 			Vector3 vertical{ cameraRotate.z,0.0f,cameraRotate.x };
-			cameraPosition = cameraPosition - (Mymath::TransformNormal(vertical, cameraMatrix) * kCameraSpeed);
+			Vector3 velocity = Mymath::TransformNormal(vertical, cameraMatrix) * kCameraSpeed;
+			if (!isEnableYMovement) {
+				velocity.y = 0.0f;
+			}
+			cameraPosition = cameraPosition - velocity;
 		}
 		if (Novice::CheckHitKey(DIK_D)) {
 			Vector3 vertical{ cameraRotate.x,0.0f,cameraRotate.z };
@@ -224,24 +243,47 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			Vector2 velocity = (mousePosition - preMousePosition) * cameraSence;
 			cameraRotate += {velocity.y, velocity.x, 0.0f};
 		}
+		// ホイール入力
+		{
+			float wheel = Novice::GetWheel() / 5.0f;
+			Vector3 vertical{ cameraRotate.z,0.0f,cameraRotate.x };
+			Vector3 velocity = Mymath::TransformNormal(vertical, cameraMatrix) * kCameraSpeed;
+			cameraPosition = cameraPosition + velocity * wheel;
+		}
+
+#pragma endregion
+
 
 		// ImGui
 
+#pragma region ImGui
+
+
+
 		ImGui::Begin("Window");
+		if (ImGui::Button("CameraReset")) {
+			cameraPosition = kCameraStartPosition;
+			cameraRotate = kCameraStartRotate;
+		}
 		if (ImGui::TreeNode("CameraControl")) {
+			ImGui::Checkbox("isEnableYMovement", &isEnableYMovement);
 			ImGui::SliderFloat("CameraSence", &cameraSence, 0.001f, 0.01f);
 			ImGui::DragFloat3("CameraTraslate", &cameraPosition.x, 0.01f);
 			ImGui::DragFloat3("CameraRotate", &cameraRotate.x, 0.01f);
 			ImGui::TreePop();
 		}
-		ImGui::DragFloat3("Segment.origin", &segment.origin.x, 0.01f);
-		ImGui::DragFloat3("Segment.diff", &segment.diff.x, 0.01f);
-		ImGui::DragFloat3("point", &point.x, 0.01f);
-		ImGui::InputFloat3("Project", &project.x, "%.3f", ImGuiInputTextFlags_ReadOnly);
+		ImGui::DragFloat3("sphere1.center", &sphere1.center.x, 0.01f);
+		ImGui::DragFloat("sphere1.radius", &sphere1.radius, 0.01f);
+		ImGui::DragFloat3("sphere2.center", &sphere2.center.x, 0.01f);
+		ImGui::DragFloat("sphere2.radius", &sphere2.radius, 0.01f);
 		ImGui::End();
 
-		project = Mymath::Project(point - segment.origin, segment.diff);
-		clossPoint = Mymath::CrossPoint(point, segment);
+#pragma endregion
+
+		if (Mymath::IsCollision(sphere1, sphere2))
+			color = RED;
+		else
+			color = WHITE;
 
 		cameraMatrix = Mymath::MakeAffineMatrix({ 1.0f,1.0f,1.0f }, cameraRotate, cameraPosition);
 		Matrix4x4 viewMatrix = Mymath::Inverse(cameraMatrix);
@@ -264,16 +306,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		DrawGrid(viewProjectionMatrix, viewportMatrix);
 
-		Vector3 start = Mymath::Transform(Mymath::Transform(segment.origin, viewProjectionMatrix), viewportMatrix);
-		Vector3 end = Mymath::Transform(Mymath::Transform(segment.origin + segment.diff, viewProjectionMatrix), viewportMatrix);
-		Novice::DrawLine(int(start.x), int(start.y), int(end.x), int(end.y), WHITE);
-
-		Sphere pointSphere{ point,0.01f };
-		Sphere clossPointSphere{ clossPoint,0.01f };
-		Sphere originSphere{ segment.origin,0.01f };
-		DrawSphere(pointSphere, viewProjectionMatrix, viewportMatrix, RED);
-		DrawSphere(clossPointSphere, viewProjectionMatrix, viewportMatrix, BLACK);
-		DrawSphere(originSphere, viewProjectionMatrix, viewportMatrix, GREEN);
+		DrawSphere(sphere1, viewProjectionMatrix, viewportMatrix, color);
+		DrawSphere(sphere2, viewProjectionMatrix, viewportMatrix, WHITE);
 
 
 		///
