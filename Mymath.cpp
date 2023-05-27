@@ -213,6 +213,13 @@ Vector3 Mymath::CrossPoint(const Vector3& point, const Segment& segment) {
 	return segment.origin + Project(point - segment.origin, segment.diff);
 }
 
+Vector3 Mymath::Perpendicular(const Vector3& vector) {
+	if (vector.x != 0.0f || vector.y != 0.0f) {
+		return { -vector.y,vector.x,0.0f };
+	}
+	return { 0.0f,-vector.z,vector.y };
+}
+
 // End Vector3
 #pragma endregion
 
@@ -323,6 +330,16 @@ bool Mymath::IsCollision(const Sphere& s1, const Sphere& s2) {
 	float distance = Length(s1.center - s2.center);
 	// 半径の合計よりも短ければ衝突
 	if (distance <= s1.radius + s2.radius) {
+		return true;
+	}
+	return false;
+}
+
+bool Mymath::IsCollision(const Sphere& sphere, const Plane& plane) {
+	// 球の中心と平面の距離を求める
+	float distance = sqrtf(powf(Dot(sphere.center, plane.normal) - plane.distance, 2));
+	// 半径よりも短ければ衝突
+	if (distance <= sphere.radius) {
 		return true;
 	}
 	return false;
