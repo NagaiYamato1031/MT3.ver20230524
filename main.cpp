@@ -199,6 +199,42 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		/// ↓更新処理ここから
 		///
 
+		// ImGui
+
+#pragma region ImGui
+
+
+
+		ImGui::Begin("Window");
+		if (ImGui::Button("CameraReset")) {
+			cameraPosition = kCameraStartPosition;
+			cameraRotate = kCameraStartRotate;
+		}
+		if (ImGui::TreeNode("CameraControl")) {
+			ImGui::Checkbox("isEnableYMovement", &isEnableYMovement);
+			ImGui::SliderFloat("CameraSence", &cameraSence, 0.001f, 0.01f);
+			ImGui::DragFloat3("CameraTraslate", &cameraPosition.x, 0.01f);
+			ImGui::DragFloat3("CameraRotate", &cameraRotate.x, 0.01f);
+			ImGui::TreePop();
+		}
+		ImGui::DragFloat3("sphere1.center", &sphere1.center.x, 0.01f);
+		ImGui::DragFloat("sphere1.radius", &sphere1.radius, 0.01f);
+		ImGui::DragFloat3("sphere2.center", &sphere2.center.x, 0.01f);
+		ImGui::DragFloat("sphere2.radius", &sphere2.radius, 0.01f);
+		ImGui::End();
+
+#pragma endregion
+
+
+#pragma region 実際の処理
+
+		if (Mymath::IsCollision(sphere1, sphere2))
+			color = RED;
+		else
+			color = WHITE;
+
+#pragma endregion
+
 		// カメラの移動
 
 		Matrix4x4 cameraMatrix = Mymath::MakeAffineMatrix({ 1.0f,1.0f,1.0f }, cameraRotate, cameraPosition);
@@ -253,37 +289,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 #pragma endregion
 
-
-		// ImGui
-
-#pragma region ImGui
-
-
-
-		ImGui::Begin("Window");
-		if (ImGui::Button("CameraReset")) {
-			cameraPosition = kCameraStartPosition;
-			cameraRotate = kCameraStartRotate;
-		}
-		if (ImGui::TreeNode("CameraControl")) {
-			ImGui::Checkbox("isEnableYMovement", &isEnableYMovement);
-			ImGui::SliderFloat("CameraSence", &cameraSence, 0.001f, 0.01f);
-			ImGui::DragFloat3("CameraTraslate", &cameraPosition.x, 0.01f);
-			ImGui::DragFloat3("CameraRotate", &cameraRotate.x, 0.01f);
-			ImGui::TreePop();
-		}
-		ImGui::DragFloat3("sphere1.center", &sphere1.center.x, 0.01f);
-		ImGui::DragFloat("sphere1.radius", &sphere1.radius, 0.01f);
-		ImGui::DragFloat3("sphere2.center", &sphere2.center.x, 0.01f);
-		ImGui::DragFloat("sphere2.radius", &sphere2.radius, 0.01f);
-		ImGui::End();
-
-#pragma endregion
-
-		if (Mymath::IsCollision(sphere1, sphere2))
-			color = RED;
-		else
-			color = WHITE;
 
 		cameraMatrix = Mymath::MakeAffineMatrix({ 1.0f,1.0f,1.0f }, cameraRotate, cameraPosition);
 		Matrix4x4 viewMatrix = Mymath::Inverse(cameraMatrix);
