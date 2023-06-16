@@ -153,7 +153,7 @@ void DrawPlane(const Plane& plane, const Matrix4x4& viewProjectionMatrix, const 
 	Vector3 perpendiculars[4];
 	perpendiculars[0] = Mymath::Normalize(Mymath::Perpendicular(plane.normal));
 	perpendiculars[1] = { -perpendiculars[0].x,-perpendiculars[0].y,-perpendiculars[0].z };
-	perpendiculars[2] = Mymath::Cross(plane.normal,perpendiculars[0]);
+	perpendiculars[2] = Mymath::Cross(plane.normal, perpendiculars[0]);
 	perpendiculars[3] = { -perpendiculars[2].x,-perpendiculars[2].y,-perpendiculars[2].z };
 
 	Vector3 points[4];
@@ -168,10 +168,21 @@ void DrawPlane(const Plane& plane, const Matrix4x4& viewProjectionMatrix, const 
 	Novice::DrawLine((int)points[1].x, (int)points[1].y, (int)points[3].x, (int)points[3].y, color);
 }
 
-void DrawSegment(const Segment& segment, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, int32_t color) {
+void DrawSegment(const Segment& segment, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, uint32_t color) {
 	Vector3 start = Mymath::Transform(Mymath::Transform(segment.origin, viewProjectionMatrix), viewportMatrix);
 	Vector3 end = Mymath::Transform(Mymath::Transform(segment.origin + segment.diff, viewProjectionMatrix), viewportMatrix);
 	Novice::DrawLine((int)start.x, (int)start.y, (int)end.x, (int)end.y, color);
+}
+
+void DrawTriangle(const Triangle& triangle, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, uint32_t color) {
+	Triangle wTriangle;
+	for (size_t i = 0; i < 3; i++) {
+		wTriangle.vertices[i] = Mymath::Transform(Mymath::Transform(triangle.vertices[i], viewProjectionMatrix), viewportMatrix);
+	}
+	Novice::DrawTriangle((int)wTriangle.vertices[0].x, (int)wTriangle.vertices[0].y,
+		(int)wTriangle.vertices[1].x, (int)wTriangle.vertices[1].y,
+		(int)wTriangle.vertices[2].x, (int)wTriangle.vertices[2].y,
+		color, kFillModeWireFrame);
 }
 
 
@@ -203,11 +214,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	float cameraSence = 0.003f;
 
-	// 平面
-	Plane plane;
-	plane.normal = { 0.3f,1.0f,0.0f };
-	plane.normal = Mymath::Normalize(plane.normal);
-	plane.distance = 1.2f;
+	// 三角形
+	Triangle triangle;
+	triangle.vertices[0] = { 0.0,1.0f,0.0f };
+	triangle.vertices[1] = { 0.5,0.0f,0.0f };
+	triangle.vertices[2] = { -0.5,0.0f,0.0f };
 	// 線分
 	Segment segment;
 	segment.origin = { 0.0f,0.0f,0.0f };
@@ -247,9 +258,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			ImGui::DragFloat3("CameraRotate", &cameraRotate.x, 0.01f);
 			ImGui::TreePop();
 		}
-		ImGui::DragFloat3("plane.normal", &plane.normal.x, 0.01f);
-		plane.normal = Mymath::Normalize(plane.normal);
-		ImGui::DragFloat("plane.distance", &plane.distance, 0.01f);
+		ImGui::DragFloat3("vertical0", &triangle.vertices[0].x, 0.01f);
+		ImGui::DragFloat3("vertical1", &triangle.vertices[1].x, 0.01f);
+		ImGui::DragFloat3("vertical2", &triangle.vertices[2].x, 0.01f);
+
 		ImGui::DragFloat3("segment.origin", &segment.origin.x, 0.01f);
 		ImGui::DragFloat3("segment.diff", &segment.diff.x, 0.01f);
 		ImGui::End();
@@ -259,7 +271,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 #pragma region 実際の処理
 
-		if (Mymath::IsCollision(plane,segment))
+		if (Mymath::IsCollision(triangle, segment))
 			color = RED;
 		else
 			color = WHITE;
@@ -342,7 +354,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		DrawGrid(viewProjectionMatrix, viewportMatrix);
 
-		DrawPlane(plane, viewProjectionMatrix, viewportMatrix, WHITE);
+		DrawTriangle(triangle, viewProjectionMatrix, viewportMatrix, WHITE);
 		DrawSegment(segment, viewProjectionMatrix, viewportMatrix, color);
 
 

@@ -1,6 +1,9 @@
 #pragma once
 
-#include "Mymath.h"
+#include "Vector2.h"
+#include "Vector3.h"
+#include "Vector4.h"
+#include "Matrix4x4.h"
 
 /// <summary>
 /// 球体
@@ -43,3 +46,9 @@ struct Plane
 	Vector3 normal;	// 法線
 	float distance;	// 距離
 };
+
+struct Triangle {
+	// 頂点
+	Vector3 vertices[3];
+};
+
