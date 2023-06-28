@@ -201,6 +201,22 @@ bool Mymath::IsCollision(const Triangle& triangle, const Segment& segment) {
 
 #pragma endregion
 
+#pragma region AABB
+
+bool Mymath::IsCollision(const AABB& a, const AABB& b) {
+	if ((a.min.x <= b.max.x && a.max.x >= b.min.x) && // x 軸
+		(a.min.y <= b.max.y && a.max.y >= b.min.y) && // y 軸
+		(a.min.z <= b.max.z && a.max.z >= b.min.z) // z 軸
+		) {
+		return true;
+	}
+	return false;
+}
+
+#pragma endregion
+
+
+
 // End Objects
 #pragma endregion
 
