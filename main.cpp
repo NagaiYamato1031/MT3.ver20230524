@@ -43,6 +43,12 @@ void Matrix4x4ScreenPrintf(int x, int y, Matrix4x4 matrix, const char* label) {
 	}
 }
 
+
+void ViewTransform(Vector3& pos, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix) {
+	pos = Mymath::Transform(Mymath::Transform(pos, viewProjectionMatrix), viewportMatrix);
+}
+
+
 void DrawGrid(const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix) {
 	// Grid 半分の幅
 	const float kGridHalfWidth = 2.0f;
@@ -185,8 +191,121 @@ void DrawTriangle(const Triangle& triangle, const Matrix4x4& viewProjectionMatri
 		color, kFillModeWireFrame);
 }
 
+void DrawAABB(const AABB& aabb, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, uint32_t color) {
+	Vector3 start, end;
+
+	Vector3 length = aabb.max - aabb.min;
+
+	//const uint32_t kVector3Size = sizeof(Vector3);
+
+#pragma region min
+
+	start = aabb.min;
+	end = aabb.min;
+	end.x += length.x;
+
+	ViewTransform(start, viewProjectionMatrix, viewportMatrix);
+	ViewTransform(end, viewProjectionMatrix, viewportMatrix);
+	Novice::DrawLine((int)start.x, (int)start.y, (int)end.x, (int)end.y, color);
+
+	end = aabb.min;
+	end.y += length.y;
+
+	ViewTransform(end, viewProjectionMatrix, viewportMatrix);
+	Novice::DrawLine((int)start.x, (int)start.y, (int)end.x, (int)end.y, color);
+
+	end = aabb.min;
+	end.z += length.z;
+
+	ViewTransform(end, viewProjectionMatrix, viewportMatrix);
+	Novice::DrawLine((int)start.x, (int)start.y, (int)end.x, (int)end.y, color);
+
+#pragma endregion
+
+#pragma region max
+
+	start = aabb.max;
+	end = aabb.max;
+	end.x -= length.x;
+
+	ViewTransform(start, viewProjectionMatrix, viewportMatrix);
+	ViewTransform(end, viewProjectionMatrix, viewportMatrix);
+	Novice::DrawLine((int)start.x, (int)start.y, (int)end.x, (int)end.y, color);
+
+	end = aabb.max;
+	end.y -= length.y;
+
+	ViewTransform(end, viewProjectionMatrix, viewportMatrix);
+	Novice::DrawLine((int)start.x, (int)start.y, (int)end.x, (int)end.y, color);
+
+	end = aabb.max;
+	end.z -= length.z;
+
+	ViewTransform(end, viewProjectionMatrix, viewportMatrix);
+	Novice::DrawLine((int)start.x, (int)start.y, (int)end.x, (int)end.y, color);
+
+#pragma endregion
+
+#pragma region min.x,max
+
+	start = aabb.max;
+	start.x -= length.x;
+	end = aabb.min;
+	end.z += length.z;
+
+	ViewTransform(start, viewProjectionMatrix, viewportMatrix);
+	ViewTransform(end, viewProjectionMatrix, viewportMatrix);
+	Novice::DrawLine((int)start.x, (int)start.y, (int)end.x, (int)end.y, color);
+
+	end = aabb.min;
+	end.y += length.y;
+
+	ViewTransform(end, viewProjectionMatrix, viewportMatrix);
+	Novice::DrawLine((int)start.x, (int)start.y, (int)end.x, (int)end.y, color);
+
+#pragma endregion
+	
+#pragma region max.x,min
+
+	start = aabb.max;
+	start.z -= length.z;
+	end = aabb.min;
+	end.y += length.y;
+
+	ViewTransform(start, viewProjectionMatrix, viewportMatrix);
+	ViewTransform(end, viewProjectionMatrix, viewportMatrix);
+	Novice::DrawLine((int)start.x, (int)start.y, (int)end.x, (int)end.y, color);
+
+	end = aabb.min;
+	end.x += length.x;
+
+	ViewTransform(end, viewProjectionMatrix, viewportMatrix);
+	Novice::DrawLine((int)start.x, (int)start.y, (int)end.x, (int)end.y, color);
+
+#pragma endregion
+
+#pragma region max.z,min
+
+	start = aabb.max;
+	start.y -= length.y;
+	end = aabb.min;
+	end.z += length.z;
+
+	ViewTransform(start, viewProjectionMatrix, viewportMatrix);
+	ViewTransform(end, viewProjectionMatrix, viewportMatrix);
+	Novice::DrawLine((int)start.x, (int)start.y, (int)end.x, (int)end.y, color);
+
+	end = aabb.min;
+	end.x += length.x;
+
+	ViewTransform(end, viewProjectionMatrix, viewportMatrix);
+	Novice::DrawLine((int)start.x, (int)start.y, (int)end.x, (int)end.y, color);
+
+#pragma endregion
 
 
+
+}
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
@@ -214,15 +333,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	float cameraSence = 0.003f;
 
-	// 三角形
-	Triangle triangle;
-	triangle.vertices[0] = { 0.0,1.0f,0.0f };
-	triangle.vertices[1] = { 0.5,0.0f,0.0f };
-	triangle.vertices[2] = { -0.5,0.0f,0.0f };
-	// 線分
-	Segment segment;
-	segment.origin = { 0.0f,0.0f,0.0f };
-	segment.diff = { 0.2f,0.7f,0.2f };
+
+	AABB aabb1{
+		.min{-0.5f,-0.5f,-0.5f},
+		.max{0.0f,0.0f,0.0f},
+	};
+	AABB aabb2{
+		.min{0.2f,0.2f,0.2f},
+		.max{1.0f,1.0f,1.0f},
+	};
 
 
 	int color = WHITE;
@@ -258,12 +377,25 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			ImGui::DragFloat3("CameraRotate", &cameraRotate.x, 0.01f);
 			ImGui::TreePop();
 		}
-		ImGui::DragFloat3("vertical0", &triangle.vertices[0].x, 0.01f);
-		ImGui::DragFloat3("vertical1", &triangle.vertices[1].x, 0.01f);
-		ImGui::DragFloat3("vertical2", &triangle.vertices[2].x, 0.01f);
-
-		ImGui::DragFloat3("segment.origin", &segment.origin.x, 0.01f);
-		ImGui::DragFloat3("segment.diff", &segment.diff.x, 0.01f);
+		ImGui::Separator();
+		ImGui::DragFloat3("aabb1.min", &aabb1.min.x, 0.01f);
+		ImGui::DragFloat3("aabb1.max", &aabb1.max.x, 0.01f);
+		aabb1.min.x = (std::min)(aabb1.min.x, aabb1.max.x);
+		aabb1.max.x = (std::max)(aabb1.min.x, aabb1.max.x);
+		aabb1.min.y = (std::min)(aabb1.min.y, aabb1.max.y);
+		aabb1.max.y = (std::max)(aabb1.min.y, aabb1.max.y);
+		aabb1.min.z = (std::min)(aabb1.min.z, aabb1.max.z);
+		aabb1.max.z = (std::max)(aabb1.min.z, aabb1.max.z);
+		ImGui::Separator();
+		ImGui::DragFloat3("aabb2.min", &aabb2.min.x, 0.01f);
+		ImGui::DragFloat3("aabb2.max", &aabb2.max.x, 0.01f);
+		aabb2.min.x = (std::min)(aabb2.min.x, aabb2.max.x);
+		aabb2.max.x = (std::max)(aabb2.min.x, aabb2.max.x);
+		aabb2.min.y = (std::min)(aabb2.min.y, aabb2.max.y);
+		aabb2.max.y = (std::max)(aabb2.min.y, aabb2.max.y);
+		aabb2.min.z = (std::min)(aabb2.min.z, aabb2.max.z);
+		aabb2.max.z = (std::max)(aabb2.min.z, aabb2.max.z);
+		ImGui::Separator();
 		ImGui::End();
 
 #pragma endregion
@@ -271,7 +403,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 #pragma region 実際の処理
 
-		if (Mymath::IsCollision(triangle, segment))
+		if (Mymath::IsCollision(aabb1, aabb2))
 			color = RED;
 		else
 			color = WHITE;
@@ -354,9 +486,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		DrawGrid(viewProjectionMatrix, viewportMatrix);
 
-		DrawTriangle(triangle, viewProjectionMatrix, viewportMatrix, WHITE);
-		DrawSegment(segment, viewProjectionMatrix, viewportMatrix, color);
-
+		DrawAABB(aabb1, viewProjectionMatrix, viewportMatrix, color);
+		DrawAABB(aabb2, viewProjectionMatrix, viewportMatrix, WHITE);
 
 		///
 		/// ↑描画処理ここまで

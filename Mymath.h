@@ -68,43 +68,50 @@ namespace Mymath {
 	/// </summary>
 	/// <param name="plane">平面</param>
 	/// <param name="line">直線</param>
-	/// <returns></returns>
+	/// <returns>true:衝突している,false:衝突していない</returns>
 	bool IsCollision(const Plane& plane, const Line& line);
 	/// <summary>
 	/// 線と平面の衝突判定
 	/// </summary>
 	/// <param name="plane">平面</param>
 	/// <param name="line">半直線</param>
-	/// <returns></returns>
+	/// <returns>true:衝突している,false:衝突していない</returns>
 	bool IsCollision(const Plane& plane, const Ray& ray);
 	/// <summary>
 	/// 線と平面の衝突判定
 	/// </summary>
 	/// <param name="plane">平面</param>
 	/// <param name="line">線分</param>
-	/// <returns></returns>
+	/// <returns>true:衝突している,false:衝突していない</returns>
 	bool IsCollision(const Plane& plane, const Segment& segment);
 	/// <summary>
 	/// 三角形と直線の衝突判定
 	/// </summary>
 	/// <param name="triangle">三角形</param>
 	/// <param name="line">直線</param>
-	/// <returns></returns>
+	/// <returns>true:衝突している,false:衝突していない</returns>
 	bool IsCollision(const Triangle& triangle, const Line& line);
 	/// <summary>
 	/// 三角形と半直線の衝突判定
 	/// </summary>
 	/// <param name="triangle">三角形</param>
 	/// <param name="ray">半直線</param>
-	/// <returns></returns>
+	/// <returns>true:衝突している,false:衝突していない</returns>
 	bool IsCollision(const Triangle& triangle, const Ray& ray);
 	/// <summary>
 	/// 三角形と線分の衝突判定
 	/// </summary>
 	/// <param name="triangle">三角形</param>
 	/// <param name="segment">線分</param>
-	/// <returns></returns>
+	/// <returns>true:衝突している,false:衝突していない</returns>
 	bool IsCollision(const Triangle& triangle, const Segment& segment);
+	/// <summary>
+	/// AABB と AABB の衝突判定
+	/// </summary>
+	/// <param name="aabb1">AABB1</param>
+	/// <param name="aabb2">AABB2</param>
+	/// <returns>true:衝突している,false:衝突していない</returns>
+	bool IsCollision(const AABB& aabb1,const AABB& aabb2);
 
 #pragma endregion
 

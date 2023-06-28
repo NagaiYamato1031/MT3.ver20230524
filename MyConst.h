@@ -41,14 +41,28 @@ struct Segment
 	Vector3 diff;	// 終点への差分ベクトル
 };
 
+/// <summary>
+/// 平面
+/// </summary>
 struct Plane
 {
 	Vector3 normal;	// 法線
 	float distance;	// 距離
 };
 
-struct Triangle {
-	// 頂点
-	Vector3 vertices[3];
+/// <summary>
+/// 三角形
+/// </summary>
+struct Triangle
+{
+	Vector3 vertices[3];	// 頂点
 };
 
+/// <summary>
+/// 軸平行境界箱
+/// </summary>
+struct AABB
+{
+	Vector3 min;	// 最小点
+	Vector3 max;	// 最大点
+};
