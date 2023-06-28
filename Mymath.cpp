@@ -1,6 +1,7 @@
 #include "Mymath.h"
 #include <cassert>
 #include <cmath>
+#include <algorithm>
 #include "MyConst.h"
 
 #pragma region Objects
@@ -212,6 +213,21 @@ bool Mymath::IsCollision(const AABB& a, const AABB& b) {
 	}
 	return false;
 }
+bool Mymath::IsCollision(const AABB& aabb, const Sphere& sphere) {
+	// 最近接線
+	Vector3 clossPoint{ sphere.center };
+	clossPoint.x = (std::clamp)(clossPoint.x,aabb.min.x, aabb.max.x);
+	clossPoint.y = (std::clamp)(clossPoint.y,aabb.min.y, aabb.max.y);
+	clossPoint.z = (std::clamp)(clossPoint.z,aabb.min.z, aabb.max.z);
+	float distance = Length(clossPoint - sphere.center);
+
+	if (distance <= sphere.radius) {
+		return true;
+	}
+	return false;
+
+}
+
 
 #pragma endregion
 
