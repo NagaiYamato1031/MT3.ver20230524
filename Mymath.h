@@ -112,6 +112,13 @@ namespace Mymath {
 	/// <param name="aabb2">AABB2</param>
 	/// <returns>true:衝突している,false:衝突していない</returns>
 	bool IsCollision(const AABB& aabb1,const AABB& aabb2);
+	/// <summary>
+	/// AABB と球の衝突判定
+	/// </summary>
+	/// <param name="aabb">AABB1</param>
+	/// <param name="sphere">Sphere</param>
+	/// <returns>true:衝突している,false:衝突していない</returns>
+	bool IsCollision(const AABB& aabb,const Sphere& sphere);
 
 #pragma endregion
 
